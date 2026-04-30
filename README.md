@@ -1,5 +1,9 @@
+# nanoXPP
 
-# nanoGPT
+**Based on [karpathy/nanoGPT](https://github.com/karpathy/nanoGPT)**
+
+Specialized small language model for **X++ (D365 F&O)** code generation.
+# nanoXPP
 
 ![nanoGPT](assets/nanogpt.jpg)
 
