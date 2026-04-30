@@ -1,4 +1,56 @@
 """
+Generate X++ code using nanoXPP model with custom tokenizer.
+"""
+import torch
+import argparse
+from model import GPTConfig, GPT
+from tokenizers import Tokenizer
+
+def main():
+    parser = argparse.ArgumentParser(description='Generate X++ code from nanoXPP model')
+    parser.add_argument('--out_dir', type=str, default='out-xpp', help='output directory')
+    parser.add_argument('--start', type=str, default="class ", help='starting prompt')
+    parser.add_argument('--max_new_tokens', type=int, default=400, help='number of tokens to generate')
+    parser.add_argument('--temperature', type=float, default=0.75, help='sampling temperature')
+    parser.add_argument('--top_k', type=int, default=200, help='top-k sampling')
+    parser.add_argument('--device', type=str, default='cuda', help='device')
+    args = parser.parse_args()
+
+    # Load model
+    ckpt_path = f'{args.out_dir}/ckpt.pt'
+    checkpoint = torch.load(ckpt_path, map_location=args.device)
+    
+    model_args = checkpoint['model_args']
+    gptconf = GPTConfig(**model_args)
+    model = GPT(gptconf)
+    model.load_state_dict(checkpoint['model'])
+    model.eval()
+    model.to(args.device)
+
+    print(f"Loaded model from {ckpt_path}")
+    print(f"Number of parameters: {sum(p.numel() for p in model.parameters()) / 1e6:.2f}M")
+
+    # Load custom X++ tokenizer
+    tokenizer_path = "tokenizers/xpp_tokenizer/tokenizer.json"
+    tokenizer = Tokenizer.from_file(tokenizer_path)
+    print(f"Loaded custom X++ tokenizer (vocab size: {tokenizer.get_vocab_size()})")
+
+    # Encode starting prompt
+    encoded = tokenizer.encode(args.start)
+    x = torch.tensor(encoded.ids, dtype=torch.long, device=args.device)[None, ...]
+
+    print("\n=== Generating X++ code ===\n")
+    print(args.start, end="", flush=True)
+
+    with torch.no_grad():
+        y = model.generate(x, args.max_new_tokens, temperature=args.temperature, top_k=args.top_k)
+        generated = tokenizer.decode(y[0].tolist())
+        print(generated[len(args.start):], end="", flush=True)
+
+    print("\n\n=== Generation finished ===")
+
+if __name__ == "__main__":
+    main()"""
 Sample from a trained model
 """
 import os
