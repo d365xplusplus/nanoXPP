@@ -53,6 +53,16 @@ python train.py config/train_xpp.py
 python sample.py --out_dir=out-xpp --start="class MyExtension extends RunBase"
 ```
 
+## 📁 Important Scripts
+
+| Script | Purpose |
+|--------|---------|
+| `merge_all_xml_to_input.py` | Merge all X++ XML files into one `input.txt` |
+| `data/prepare_xpp.py` | Convert `input.txt` to `train.bin` and `val.bin` |
+| `train_xpp_tokenizer.py` | Train custom X++ tokenizer |
+| `config/train_xpp.py` | Training configuration |
+| `train.py` | Main training script |
+| `sample.py` | Generate X++ code |
 ---
 
 ## 📊 Model Information
