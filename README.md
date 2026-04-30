@@ -57,14 +57,14 @@ python sample.py --out_dir=out-xpp --start="class MyExtension extends RunBase"
 
 ## 📊 Model Information
 
-- **Architecture**: NanoGPT (Decoder-only Transformer)
-- **Training Approach**: **From Scratch** (No pre-trained weights)
-- **Model Size**: 124M parameters (`n_embd=768`)
-- **Current Training Data**: ~98MB X++ code (8881 files)
-- **Purpose**: Educational and research use — to understand how to train a domain-specific LLM for X++
+- **Architecture**: Decoder-only Transformer (NanoGPT style)
+- **Training Method**: **From Scratch** (Random initialization, no pre-trained weights)
+- **Model Size**: 124M parameters (`n_embd = 768`)
+- **Current Training Data**: ~98MB X++ code (8,881 files)
+- **Project Purpose**: Educational & Research — to learn and demonstrate how to train a domain-specific LLM for X++ (Dynamics 365)
 - **Tested Hardware**: RTX 4080
 
-> **Note**: This project trains the model **entirely from scratch** on X++ data. No existing pre-trained model is used.
+> **Note**: This project is a customized fork of NanoGPT, heavily modified for X++ language and Dynamics 365 scenarios.
 
 ---
 
