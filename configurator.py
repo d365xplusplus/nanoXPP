@@ -1,47 +1,55 @@
 """
-Poor Man's Configurator. Probably a terrible idea. Example usage:
-$ python train.py config/override_file.py --batch_size=32
-this will first run config/override_file.py, then override batch_size to 32
-
-The code in this file will be run as follows from e.g. train.py:
->>> exec(open('configurator.py').read())
-
-So it's not a Python module, it's just shuttling this code away from train.py
-The code in this script then overrides the globals()
-
-I know people are not going to love this, I just really dislike configuration
-complexity and having to prepend config. to every single variable. If someone
-comes up with a better simple Python solution I am all ears.
+nanoXPP Configurator - Clean & Modern Version
+Handles config file loading and command line overrides
 """
 
+import os
 import sys
+import argparse
 from ast import literal_eval
 
-for arg in sys.argv[1:]:
-    if '=' not in arg:
-        # assume it's the name of a config file
-        assert not arg.startswith('--')
-        config_file = arg
-        print(f"Overriding config with {config_file}:")
-        with open(config_file) as f:
-            print(f.read())
-        exec(open(config_file).read())
-    else:
-        # assume it's a --key=value argument
-        assert arg.startswith('--')
-        key, val = arg.split('=')
-        key = key[2:]
-        if key in globals():
+def parse_config():
+    parser = argparse.ArgumentParser(description='nanoXPP Training Config')
+    parser.add_argument('config_file', nargs='?', default='config/train_xpp.py',
+                        help='Path to config file (default: config/train_xpp.py)')
+    
+    # Allow overriding any config parameter via --key=value
+    # Example: --max_iters=5000 --learning_rate=6e-4
+    known_args, unknown = parser.parse_known_args()
+    
+    # Load the base config file
+    config_path = known_args.config_file
+    print(f"📄 Loading config: {config_path}")
+    
+    try:
+        exec(open(config_path).read(), globals())
+    except FileNotFoundError:
+        print(f"❌ Error: Config file '{config_path}' not found!")
+        sys.exit(1)
+    except Exception as e:
+        print(f"❌ Error loading config: {e}")
+        sys.exit(1)
+
+    # Apply command line overrides
+    for arg in unknown:
+        if arg.startswith('--'):
             try:
-                # attempt to eval it it (e.g. if bool, number, or etc)
-                attempt = literal_eval(val)
-            except (SyntaxError, ValueError):
-                # if that goes wrong, just use the string
-                attempt = val
-            # ensure the types match ok
-            assert type(attempt) == type(globals()[key])
-            # cross fingers
-            print(f"Overriding: {key} = {attempt}")
-            globals()[key] = attempt
-        else:
-            raise ValueError(f"Unknown config key: {key}")
+                key, value = arg[2:].split('=', 1)
+                # Try to evaluate the value (so 1e-4 becomes float, True becomes bool, etc.)
+                try:
+                    value = literal_eval(value)
+                except:
+                    pass  # keep as string if eval fails
+                
+                globals()[key] = value
+                print(f"🔧 Overriding {key} = {value}")
+            except Exception:
+                print(f"⚠️  Warning: Could not parse argument: {arg}")
+
+    print(f"✅ Config loaded successfully. max_iters = {globals().get('max_iters', 'N/A')}")
+    return globals()
+
+
+# Run the configurator when imported
+if __name__ == "__main__":
+    parse_config()
