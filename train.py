@@ -1,6 +1,7 @@
 """
 nanoXPP Training Script - Stable & Detailed Version
 With proper argparse for command line arguments
+& Evaluation and Stats Saving
 """
 
 import os
@@ -111,6 +112,11 @@ while True:
     if iter_num % eval_interval == 0 and master_process:
         losses = estimate_loss()
         print(f"step {iter_num:5d} | train loss {losses['train']:.4f} | val loss {losses['val']:.4f}")
+
+        # Save stats
+        train_stats = {'train_loss': losses['train'], 'val_loss': losses['val']}
+        with open(os.path.join(out_dir, 'train_stats.pkl'), 'wb') as f:
+            pickle.dump(train_stats, f)
 
         if losses['val'] < best_val_loss:
             best_val_loss = losses['val']
